@@ -5,6 +5,7 @@ const Disperse: React.FC = () => {
   const [text, setText] = useState<string>("");
   const [error, setError] = useState<string[]>([]);
   const [showExample, setShowExample] = useState<boolean>(false);
+  const [hasDuplicate, setHasDuplicate] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
@@ -50,6 +51,7 @@ const Disperse: React.FC = () => {
     // Generating error messages for duplicates
     for (const address in addressLines) {
       if (addressLines[address].length > 1) {
+        setHasDuplicate(true);
         errors.push(
           `${address} duplicate in line: ${addressLines[address].join(", ")}.`
         );
@@ -82,9 +84,10 @@ const Disperse: React.FC = () => {
 
     setText(updatedLines.join("\n"));
     const filteredErrors = error.filter(
-      (err) => !err.includes("Duplicate Ethereum address.")
+      (err) => !err.includes("duplicate in line")
     );
     setError(filteredErrors);
+    setHasDuplicate(false);
   };
 
   const mergeAmounts = () => {
@@ -110,10 +113,17 @@ const Disperse: React.FC = () => {
 
     setText(mergedLines.join("\n"));
     const filteredErrors = error.filter(
-      (err) => !err.includes("Duplicate Ethereum address.")
+      (err) => !err.includes("duplicate in line")
     );
     setError(filteredErrors);
+    setHasDuplicate(false);
   };
+
+  useEffect(() => {
+    console.log("error : ", error);
+  }, [error]);
+
+  console.log("has duplicate : ", hasDuplicate);
 
   return (
     <div className="disperse-container">
@@ -154,7 +164,7 @@ const Disperse: React.FC = () => {
       )}
 
       {/* Duplicate errors container */}
-      {error.some((err) => err.includes("Duplicate address")) && (
+      {hasDuplicate && (
         <div className="duplicate-errors-container">
           <div className="keep-only-one-btn" onClick={keepFirstOccurrence}>
             Keep the first one
